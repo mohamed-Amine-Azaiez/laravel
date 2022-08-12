@@ -36,7 +36,7 @@ Route::delete('/deleteProduct/{product}', [ProductController::class, 'destroy'])
 Route::Get('/product/{product}', [ProductController::class, 'show']);
 Route::Get('/product', [ProductController::class, 'index']);
 Route::Get('/product/category/{id}', [ProductController::class, 'getByCategoryId']);
-Route::resource('/addProduct', ProductController::class);
+Route::Post('/addProduct', [ProductController::class, 'store']);
 
 
 Route::put('/updateSubCategory/{subCategory}', [SubCategoryController::class, 'update']);

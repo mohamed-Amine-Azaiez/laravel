@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         //
-        $products = Product::paginate(1);
+        $products = Product::with('SubCategory')->get();
         return response()->json([
             'products' => $products
         ], 200);
@@ -44,7 +44,7 @@ class ProductController extends Controller
         $userAuth = auth('api')->user();
         if ($userAuth && $userAuth->role == 3) {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|min:4|unique:products', 'unique:ref', 'description' => 'required', 'price' => 'required', 'sub_category_id' => 'required', 'quantity' => 'required', 'picture' => 'mimes: jpeg,jpg,png,gif|required|max:10000'
+                'name' => 'required|min:4|unique:products', 'unique:ref', 'description' => 'required', 'price' => 'required', 'sub_category_id' => 'required', 'quantity' => 'required'/* , 'picture' => 'mimes: jpeg,jpg,png,gif|max:10000' */
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -56,7 +56,7 @@ class ProductController extends Controller
                 $destinationPath = 'gallery_products/';
                 $imageName = date('ymdhis') . "." . $picture->getClientOriginalExtension();
                 $picture->move($destinationPath, $imageName);
-                $input['picture'] = $imageName;
+                $input['picture'] = "aaa.jpg"; //$imageName;
             }
 
             $product = Product::create(array_merge($input, ['provider_id' => $userAuth->id]));
