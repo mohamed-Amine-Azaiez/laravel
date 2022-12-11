@@ -23,7 +23,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['verifyEmailCode', 'resetPassword', 'forgetPasswordCode', 'forgetPassword', 'login', 'registerAdmin', 'registerProvider', 'registerCustomer']]);
+        $this->middleware('auth:api', ['except' => ['verifyEmailCode', 'getByUserId', 'resetPassword', 'forgetPasswordCode', 'forgetPassword', 'login', 'registerAdmin', 'registerProvider', 'registerCustomer']]);
     }
     /**
      * Get a JWT via given credentials.
@@ -39,7 +39,8 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        if (!$token = auth()->attempt($validator->validated())) {
+        $token = auth()->attempt($validator->validated());
+        if (!$token) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -139,10 +140,10 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
+            'password' => 'required|string|min:6',
         ]);
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
+            return response()->json($validator->errors(), 400);
         }
         $input = $request->all();
 
@@ -151,6 +152,8 @@ class AuthController extends Controller
             $imageName = date('ymdhis') . "." . $picture->getClientOriginalExtension();
             $picture->move($destinationPath, $imageName);
             $input['picture'] = $imageName;
+        } else {
+            $imageName = "avatar.png";
         }
 
         $user = User::create(array_merge(
@@ -180,7 +183,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
+            'password' => 'required|string|min:6',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
@@ -192,6 +195,8 @@ class AuthController extends Controller
             $imageName = date('ymdhis') . "." . $picture->getClientOriginalExtension();
             $picture->move($destinationPath, $imageName);
             $input['picture'] = $imageName;
+        } else {
+            $imageName = "avatar.png";
         }
         $user = User::create(array_merge(
             $request->all(),
@@ -211,7 +216,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
+            'password' => 'required|string|min:6',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
@@ -247,7 +252,7 @@ class AuthController extends Controller
             'token' => 'required|digits:4',
         ]);
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
+            return response()->json($validator->errors(), 400);
         }
         $verifymail = verifyMail::with('user')->where('token', '=', $request->token)->first();
 
@@ -314,5 +319,21 @@ class AuthController extends Controller
             'expires_in' => Auth::factory()->getTTL() * 60 * 24,
             'user' => auth()->user()
         ]);
+    }
+
+    public function getUser()
+    {
+        //
+        $userAuth = auth('api')->user();
+        if ($userAuth && $userAuth->role == 1) {
+            $user = User::find($userAuth->id);
+            return response()->json([
+                'user' => $user
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'unauthorized'
+            ], 401);
+        }
     }
 }

@@ -35,6 +35,7 @@ Route::post('/updateProduct/{product}', [ProductController::class, 'update']);
 Route::delete('/deleteProduct/{product}', [ProductController::class, 'destroy']);
 Route::Get('/product/{product}', [ProductController::class, 'show']);
 Route::Get('/product', [ProductController::class, 'index']);
+Route::Get('/product/images/{fileName}', [ProductController::class, 'image']);
 Route::Get('/product/category/{id}', [ProductController::class, 'getByCategoryId']);
 Route::Post('/addProduct', [ProductController::class, 'store']);
 
@@ -77,6 +78,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('/forgetPasswordCode', [AuthController::class, 'forgetPasswordCode']);
     Route::post('/resetPassword', [AuthController::class, 'resetPassword']);
     Route::post('/verifyEmailCode', [AuthController::class, 'verifyEmailCode']);
+    Route::get('/getUser', [AuthController::class, 'getUser']);
 });
 
 Route::get('/user-profile', [AuthController::class, 'userProfile']);

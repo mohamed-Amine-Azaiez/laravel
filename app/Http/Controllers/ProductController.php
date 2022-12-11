@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -17,10 +19,17 @@ class ProductController extends Controller
     public function index()
     {
         //
-        $products = Product::with('SubCategory')->get();
+
+        $products = Product::with('SubCategory', 'ProductImage')->get();
         return response()->json([
             'products' => $products
         ], 200);
+    }
+    public function image($fileName)
+    {
+        $path = public_path() . "/gallery_products/" . $fileName;
+
+        return Response::download($path);
     }
 
     /**
@@ -52,14 +61,42 @@ class ProductController extends Controller
                 ], 500);
             }
             $input = $request->all();
-            if ($picture = $request->file('picture')) {
-                $destinationPath = 'gallery_products/';
-                $imageName = date('ymdhis') . "." . $picture->getClientOriginalExtension();
-                $picture->move($destinationPath, $imageName);
-                $input['picture'] = "aaa.jpg"; //$imageName;
-            }
 
             $product = Product::create(array_merge($input, ['provider_id' => $userAuth->id]));
+            $allowedfileExtension = ['pdf', 'jpg', 'png'];
+            $files = $request->file('picture');
+
+            $errors = [];
+            if ($request->picture <> []) {
+                //   foreach ($files as $file) {
+
+                // $extension = $file->getClientOriginalExtension();
+
+                // $check = in_array($extension, $allowedfileExtension);
+
+                //   if ($check) {
+                // foreach ($request['picture'] as $mediaFiles) {
+
+                /* $path = $mediaFiles->store('public/gallery_products/');
+                            $name = $mediaFiles->getClientOriginalName(); */
+                $mediaFiles = $request->picture[0];
+                $rr = sprintf("%06d", mt_rand(1, 999999));
+                $destinationPath = 'gallery_products/';
+                $imageName = $rr . date('ymdhis') . "." . $mediaFiles->getClientOriginalExtension();
+                $mediaFiles->move($destinationPath, $imageName);
+
+                //store image file into directory and db
+                $save = new ProductImage();
+                $save->product_id = $product->id;
+                $save->picture = $imageName;
+                $save->save();
+                // }
+                /*  } else {
+                        return response()->json(['invalid_file_format'], 422);
+                    } */
+                // }
+            }
+
 
             return response()->json([
                 'message' => 'product created',

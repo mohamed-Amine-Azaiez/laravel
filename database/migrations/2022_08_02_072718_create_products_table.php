@@ -18,7 +18,7 @@ class CreateProductsTable extends Migration
             $table->string('ref')->nullable();
             $table->string('name');
             $table->string('description');
-            $table->string('picture');
+            //$table->string('picture');
             $table->foreignId('sub_category_id');
             $table->foreignId('provider_id');
             $table->float('price');

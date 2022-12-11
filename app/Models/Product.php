@@ -9,7 +9,7 @@ class Product extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name', 'description', 'ref', 'picture', 'sub_category_id', 'price', 'quantity', 'provider_id'
+        'name', 'description', 'ref', 'sub_category_id', 'price', 'quantity', 'provider_id'
     ];
 
     public function User()
@@ -28,5 +28,9 @@ class Product extends Model
     public function order()
     {
         return $this->belongsToMany(order::class, 'OrderProduct');
+    }
+    public function ProductImage()
+    {
+        return $this->hasMany(ProductImage::class);
     }
 }

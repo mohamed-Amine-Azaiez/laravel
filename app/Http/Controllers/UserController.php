@@ -16,7 +16,16 @@ class UserController extends Controller
         if ($userAuth) {
             $user = User::find($userAuth->id);
 
-            $user->update($request->all());
+            $input = $request->all();
+            if ($picture = $request->file('picture')) {
+                $destinationPath = 'gallery_users/';
+                $imageName = date('ymdhis') . "." . $picture->getClientOriginalExtension();
+                $picture->move($destinationPath, $imageName);
+                $input['picture'] = $imageName;
+            }
+
+
+            $user->update($input);
 
             return response()->json([
                 'message' => 'User successfully Updated',
